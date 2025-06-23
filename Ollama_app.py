@@ -1,19 +1,20 @@
 import streamlit as st
 import os
-from dotenv import load_dotenv
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_community.llms import Ollama
 
-# Load environment variables from .env file (Langchain credentials)
-load_dotenv()
+# --- Environment Variables Setup ---
+LANGCHAIN_API_KEY = os.environ.get("LANGCHAIN_API_KEY")
+LANGCHAIN_PROJECT = os.environ.get("LANGCHAIN_PROJECT")
 
-# Set Langchain credentials and tracing options from environment variables
-os.environ["LANGCHAIN_API_KEY"] = os.getenv("LANGCHAIN_API_KEY")
-os.environ["LANGCHAIN_TRACING_V2"] = "true"
-os.environ["LANGCHAIN_PROJECT"] = os.getenv("LANGCHAIN_PROJECT")
+if LANGCHAIN_API_KEY:
+    os.environ["LANGCHAIN_API_KEY"] = LANGCHAIN_API_KEY
+    os.environ["LANGCHAIN_TRACING_V2"] = "true"
+if LANGCHAIN_PROJECT:
+    os.environ["LANGCHAIN_PROJECT"] = LANGCHAIN_PROJECT
 
-# Define a simple chat prompt template for the assistant
+# --- Prompt Template ---
 prompt = ChatPromptTemplate.from_messages([
     ("system", "You are a helpful assistant. Please respond to user queries."),
     ("user", "Question: {question}")
@@ -28,7 +29,6 @@ def generate_response(question):
         return f"⚠️ Error: {e}"
 
 # --- Streamlit UI ---
-
 st.set_page_config(
     page_title="Ollama Q&A Bot",
     page_icon="🧠",
@@ -78,6 +78,10 @@ st.markdown("""
 
 st.markdown("<h1 style='text-align: center; color: #6366f1;'>🧠 Ollama Q&A Chatbot</h1>", unsafe_allow_html=True)
 st.markdown("<p style='text-align: center; color: #475569;'>Ask anything and get instant answers powered by Ollama LLM!</p>", unsafe_allow_html=True)
+
+# Warn if environment variables are missing
+if not LANGCHAIN_API_KEY or not LANGCHAIN_PROJECT:
+    st.warning("⚠️ Please set the LANGCHAIN_API_KEY and LANGCHAIN_PROJECT environment variables in your deployment settings.")
 
 # Chat history in session state
 if "chat_history" not in st.session_state:
